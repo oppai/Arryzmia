@@ -33,12 +33,13 @@ defmodule Arryzmia.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.4"},
+      {:phoenix, "~> 1.5.7"},
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:github, "~> 0.12.0-rc1"}
+      {:httpoison, "~> 1.8"},
+      {:timex, "~> 3.6"}
     ]
   end
 
