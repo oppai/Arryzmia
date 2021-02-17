@@ -1,4 +1,4 @@
-# Arryzmia
+# Arryzmia ![](https://github.com/oppai/Arryzmia/workflows/api/badge.svg)
 
 Health checking for GitHub.
 
