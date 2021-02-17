@@ -10,9 +10,15 @@ defmodule ArryzmiaWeb.Endpoint do
     signing_salt: "6j/4bhaT"
   ]
 
-  socket "/socket", ArryzmiaWeb.UserSocket,
-    websocket: true,
-    longpoll: false
+  # socket "/socket", ArryzmiaWeb.UserSocket,
+  #   websocket: true,
+  #   longpoll: false
+
+  def redirect_index(conn = %Plug.Conn{path_info: []}, _opts) do
+    %Plug.Conn{conn | path_info: ["index.html"]}
+  end
+  def redirect_index(conn, _opts), do: conn
+  plug :redirect_index
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -22,7 +28,7 @@ defmodule ArryzmiaWeb.Endpoint do
     at: "/",
     from: :arryzmia,
     gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+    only: ~w(index.html css fonts images js favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
