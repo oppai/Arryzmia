@@ -28,14 +28,14 @@ defmodule Arryzmia.Github.Client do
   def issues(repo_name, opt \\ %{state: "open"}) do
     paging_request("/repos/#{repo_name}/issues", opt |> Map.merge(%{per_page: 100, page: 1}))
     |> Enum.filter(fn issue ->
-      issue |> Map.get("pull_request") |> is_nil()
+      issue |> Map.has_key?("pull_request") |> Kernel.not()
     end)
   end
 
   def pulls(repo_name, opt \\ %{state: "open"}) do
     paging_request("/repos/#{repo_name}/issues", opt |> Map.merge(%{per_page: 100, page: 1}))
     |> Enum.filter(fn issue ->
-      issue |> Map.get("pull_request") |> is_nil() |> Kernel.not()
+      issue |> Map.get("pull_request")
     end)
   end
 end
