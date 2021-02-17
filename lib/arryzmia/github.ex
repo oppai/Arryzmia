@@ -1,8 +1,6 @@
 defmodule Arryzmia.Github do
   alias Arryzmia.Github.Client
 
-  defp day_ago, do: Timex.now() |> Timex.shift(days: -1) |> DateTime.to_iso8601()
-  defp week_ago, do: Timex.now() |> Timex.shift(days: -7) |> DateTime.to_iso8601()
   defp month_ago, do: Timex.now() |> Timex.shift(months: -1) |> DateTime.to_iso8601()
   defp range_from(from), do: Date.range(Timex.now() |> DateTime.to_date(), from |> DateTime.to_date())
 
