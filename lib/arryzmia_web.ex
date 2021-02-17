@@ -22,6 +22,7 @@ defmodule ArryzmiaWeb do
       use Phoenix.Controller, namespace: ArryzmiaWeb
 
       import Plug.Conn
+      import Arryzmia.Helpers.Api
       alias ArryzmiaWeb.Router.Helpers, as: Routes
     end
   end

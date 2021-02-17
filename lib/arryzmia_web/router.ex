@@ -7,5 +7,8 @@ defmodule ArryzmiaWeb.Router do
 
   scope "/api", ArryzmiaWeb do
     pipe_through :api
+    scope "/dashboard", Controllers do
+      get "/summary", DashboardController, :index
+    end
   end
 end
