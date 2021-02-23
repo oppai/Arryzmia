@@ -1,5 +1,6 @@
 defmodule Arryzmia.Github do
   alias Arryzmia.Github.Client
+  require Arryzmia.Cache, as: Code
 
   defp month_ago, do: Timex.now() |> Timex.shift(months: -1) |> DateTime.to_iso8601()
   defp range_from(from), do: Date.range(Timex.now() |> DateTime.to_date(), from |> DateTime.to_date())
@@ -29,6 +30,12 @@ defmodule Arryzmia.Github do
   end
 
   def countOfIssues(repo_name) do
+    Code.cache("issues/count/#{repo_name}") do
+      internalCountOfIssues(repo_name)
+    end
+  end
+
+  defp internalCountOfIssues(repo_name) do
     open_issues = Client.issues(repo_name) |> length()
     thirty_days = Timex.now() |> Timex.shift(months: -1) |> range_from() |> Enum.map(&to_string/1)
     created_days = Client.issues(repo_name, %{state: "all", since: month_ago()}) |> filtered_date("created_at")
@@ -41,6 +48,12 @@ defmodule Arryzmia.Github do
   end
 
   def countOfPulls(repo_name) do
+    Code.cache("pulls/count/#{repo_name}") do
+      internalCountOfPulls(repo_name)
+    end
+  end
+
+  def internalCountOfPulls(repo_name) do
     open_pulls = Client.pulls(repo_name) |> length()
     thirty_days = Timex.now() |> Timex.shift(months: -1) |> range_from() |> Enum.map(&to_string/1)
     created_days = Client.pulls(repo_name, %{state: "all", since: month_ago()}) |> filtered_date("created_at")

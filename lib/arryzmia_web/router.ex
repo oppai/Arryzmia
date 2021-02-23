@@ -2,6 +2,7 @@ defmodule ArryzmiaWeb.Router do
   use ArryzmiaWeb, :router
 
   pipeline :api do
+    plug CORSPlug
     plug :accepts, ["json"]
   end
 

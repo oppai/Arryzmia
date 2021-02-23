@@ -12,7 +12,8 @@ defmodule Arryzmia.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Arryzmia.PubSub},
       # Start the Endpoint (http/https)
-      ArryzmiaWeb.Endpoint
+      ArryzmiaWeb.Endpoint,
+      {Cachex, name: Arryzmia}
       # Start a worker by calling: Arryzmia.Worker.start_link(arg)
       # {Arryzmia.Worker, arg}
     ]
