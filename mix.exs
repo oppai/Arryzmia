@@ -20,7 +20,7 @@ defmodule Arryzmia.MixProject do
   def application do
     [
       mod: {Arryzmia.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :cachex]
     ]
   end
 
@@ -40,6 +40,8 @@ defmodule Arryzmia.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.8"},
       {:timex, "~> 3.6"},
+      {:cors_plug, "~> 2.0"},
+      {:cachex, "~> 3.3"},
       {:mock, "~> 0.3.0", only: :test}
     ]
   end
