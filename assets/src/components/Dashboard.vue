@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>GitHub Health Board of <a href="https://github.com/tokyo-metropolitan-gov/covid19" target="_blank">{{ this.repo }}</a></h3>
+    <h1>GitHub Health Board of <a href="https://github.com/tokyo-metropolitan-gov/covid19" target="_blank">{{ this.repo }}</a></h1>
     <div class="dashboard">
       <div class="dashboard-issues">
         <h4>Issues</h4>
@@ -28,6 +28,7 @@ export default {
   data() {
     return {
       repo: "tokyo-metropolitan-gov/covid19",
+      api_url: process.env.VUE_APP_API,
       issueDataset: null, pullDataset: null, currentOpenIssue: 0, currentOpenPull: 0,
       options: { responsive: false }
     }
@@ -35,7 +36,7 @@ export default {
   mounted() {
     this
       .axios
-      .get(`http://localhost:4000/api/dashboard/summary?repo=${this.repo}`)
+      .get(`${this.api_url}/api/dashboard/summary?repo=${this.repo}`)
       .then((response) => {
         const data = response.data.data
         this.issueDataset = {
@@ -89,14 +90,12 @@ div.dashboard {
 }
 
 .dashboard-issues {
-  width: 50%;
 }
 .dashboard-issues-chars {
   display: flex;
 }
 
 .dashboard-pulls {
-  width: 50%;
 }
 .dashboard-pulls-chars {
   display: flex;
