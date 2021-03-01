@@ -39,33 +39,50 @@ export default {
       .get(`${this.api_url}/api/dashboard/summary?repo=${this.repo}`)
       .then((response) => {
         const data = response.data.data
+        const issueData = this.dataOf(data.issues)
+        const pullData = this.dataOf(data.pulls)
+
         this.issueDataset = {
-          labels: data.issues.created_count_per_day.map((day) => ( day.date )),
+          labels: issueData.days,
           datasets: [
+            {
+              label: 'Total Issues',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: issueData.countPerDay,
+            },
             {
               label: 'Open Issues',
               backgroundColor: '#f87979',
-              data: data.issues.created_count_per_day.map((day) => ( day.count )),
+              data: issueData.openPerDay,
             },
             {
-              label: 'Close Issues',
+              label: 'Closed Issues',
               backgroundColor: '#7979f8',
-              data: data.issues.closed_count_per_day.map((day) => ( day.count )),
+              data: issueData.closedPerDay,
             }
           ]
         }
         this.pullDataset = {
-          labels: data.issues.closed_count_per_day.map((day) => ( day.date )),
+          labels: pullData.days,
           datasets: [
+            {
+              label: 'Total pulls',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: pullData.countPerDay,
+            },
             {
               label: 'Open Pulls',
               backgroundColor: '#f87979',
-              data: data.pulls.created_count_per_day.map((day) => ( day.count )),
+              data: pullData.openPerDay,
             },
             {
               label: 'Close Pulls',
               backgroundColor: '#7979f8',
-              data: data.pulls.closed_count_per_day.map((day) => ( day.count )),
+              data: pullData.closedPerDay,
             }
           ]
         }
@@ -73,7 +90,20 @@ export default {
         this.currentOpenPull = data.pulls.open_count
       })
   },
-  methods: {
+  methods:{
+    dataOf: (issues) => {
+      const issueCountPerDay = issues.created_count_per_day.reduce((acc, v, i) => {
+        const last = acc[acc.length - 1]
+        const closed = issues.closed_count_per_day[i]
+        return acc.concat(last - v.count + closed.count)
+      }, [issues.open_count]).slice(0,-1)
+      return {
+        days: issues.created_count_per_day.map((day) => ( day.date )),
+        countPerDay: issueCountPerDay,
+        openPerDay: issues.created_count_per_day.map((day) => ( day.count )),
+        closedPerDay: issues.closed_count_per_day.map((day) => ( -day.count )),
+      }
+    }
   },
   components: {
     Chart,
