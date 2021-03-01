@@ -5,6 +5,7 @@ defmodule ArryzmiaWeb.Controllers.DashboardController do
     success(conn, %{
       pulls: Arryzmia.Github.countOfPulls(repo),
       issues: Arryzmia.Github.countOfIssues(repo),
+      deploys: Arryzmia.Github.countOfDeploys(repo)
     })
   end
 end
