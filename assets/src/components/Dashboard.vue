@@ -2,14 +2,20 @@
   <div>
     <h1>GitHub Health Board of <a href="https://github.com/tokyo-metropolitan-gov/covid19" target="_blank">{{ this.repo }}</a></h1>
     <div class="dashboard">
-      <div class="dashboard-issues">
+      <div class="dashboard-group dashboard-deploys">
+        <h4>Deployments</h4>
+        <div class="dashboard-issues-chars">
+          <chart :chart-data="deployDataset" :options="options" :width="dashbordWidth" />
+        </div>
+      </div>
+      <div class="dashboard-group dashboard-issues">
         <h4>Issues</h4>
         <div class="dashboard-issues-chars">
           <chart :chart-data="issueDataset" :options="options" :width="400" />
           <panel name="Current" :value="currentOpenIssue" />
         </div>
       </div>
-      <div class="dashboard-pulls">
+      <div class="dashboard-group dashboard-pulls">
         <h4>Pull Requests</h4>
         <div class="dashboard-pulls-chars">
           <chart :chart-data="pullDataset" :options="options" :width="400" />
@@ -28,19 +34,22 @@ export default {
   data() {
     return {
       repo: "tokyo-metropolitan-gov/covid19",
-      api_url: process.env.VUE_APP_API,
-      issueDataset: null, pullDataset: null, currentOpenIssue: 0, currentOpenPull: 0,
+      apiUrl: process.env.VUE_APP_API,
+      issueDataset: null, pullDataset: null, deployDataset: null,
+      currentOpenIssue: 0, currentOpenPull: 0,
+      dashbordWidth: 500,
       options: { responsive: false }
     }
   },
   mounted() {
     this
       .axios
-      .get(`${this.api_url}/api/dashboard/summary?repo=${this.repo}`)
+      .get(`${this.apiUrl}/api/dashboard/summary?repo=${this.repo}`)
       .then((response) => {
         const data = response.data.data
         const issueData = this.dataOf(data.issues)
         const pullData = this.dataOf(data.pulls)
+        const deployData = data.deploys
 
         this.issueDataset = {
           labels: issueData.days,
@@ -86,6 +95,16 @@ export default {
             }
           ]
         }
+        this.deployDataset = {
+          labels: deployData.deploy_count_per_day.map((x) => ( x.date )),
+          datasets: [
+            {
+              label: 'Open Pulls',
+              backgroundColor: '#f87979',
+              data: deployData.deploy_count_per_day.map((x) => ( x.count )),
+            }
+          ]
+        }
         this.currentOpenIssue = data.issues.open_count
         this.currentOpenPull = data.pulls.open_count
       })
@@ -117,16 +136,17 @@ export default {
 div.dashboard {
   display: flex;
   flex-wrap: wrap;
+  padding: 10px;
 }
 
-.dashboard-issues {
+.dashboard-group {
+  margin: 10px;
 }
+
 .dashboard-issues-chars {
   display: flex;
 }
 
-.dashboard-pulls {
-}
 .dashboard-pulls-chars {
   display: flex;
 }
