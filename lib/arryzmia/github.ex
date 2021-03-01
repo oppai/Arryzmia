@@ -27,6 +27,7 @@ defmodule Arryzmia.Github do
         count: count_of_days(target_days, date)
       }
     end)
+    |> Enum.reverse()
   end
 
   def countOfIssues(repo_name) do
