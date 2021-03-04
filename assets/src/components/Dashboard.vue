@@ -5,20 +5,20 @@
       <div class="dashboard-group dashboard-deploys">
         <h4>Deployments</h4>
         <div class="dashboard-issues-chars">
-          <chart :chart-data="deployDataset" :options="options" :width="dashbordWidth" />
+          <chart :chart-data="deployDataset" :options="options.wide" :width="900" />
         </div>
       </div>
       <div class="dashboard-group dashboard-issues">
         <h4>Issues</h4>
         <div class="dashboard-issues-chars">
-          <chart :chart-data="issueDataset" :options="options" :width="400" />
+          <chart :chart-data="issueDataset" :options="options.middle" :width="400" />
           <panel name="Current" :value="currentOpenIssue" />
         </div>
       </div>
       <div class="dashboard-group dashboard-pulls">
         <h4>Pull Requests</h4>
         <div class="dashboard-pulls-chars">
-          <chart :chart-data="pullDataset" :options="options" :width="400" />
+          <chart :chart-data="pullDataset" :options="options.middle" :width="400" />
           <panel name="Current" :value="currentOpenPull" />
         </div>
       </div>
@@ -37,8 +37,11 @@ export default {
       apiUrl: process.env.VUE_APP_API,
       issueDataset: null, pullDataset: null, deployDataset: null,
       currentOpenIssue: 0, currentOpenPull: 0,
-      dashbordWidth: 500,
-      options: { responsive: false }
+      dashbordWidth: window.innerWidth * 0.8,
+      options: {
+        middle: { responsive: false },
+        wide: { responsive: true },
+      }
     }
   },
   mounted() {
