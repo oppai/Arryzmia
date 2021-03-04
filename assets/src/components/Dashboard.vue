@@ -80,19 +80,19 @@ export default {
           labels: pullData.days,
           datasets: [
             {
-              label: 'Total pulls',
+              label: 'Total PRs',
               type: 'line',
               fill: false,
               backgroundColor: '#f8f879',
               data: pullData.countPerDay,
             },
             {
-              label: 'Open Pulls',
+              label: 'Open PRs',
               backgroundColor: '#f87979',
               data: pullData.openPerDay,
             },
             {
-              label: 'Close Pulls',
+              label: 'Close PRs',
               backgroundColor: '#7979f8',
               data: pullData.closedPerDay,
             }
@@ -102,10 +102,17 @@ export default {
           labels: deployData.deploy_count_per_day.map((x) => ( x.date )),
           datasets: [
             {
-              label: 'Open Pulls',
+              label: 'Release / Day',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: deployData.release_count_per_day.map((x) => ( x.count )),
+            },
+            {
+              label: 'Deploy / Day',
               backgroundColor: '#f87979',
               data: deployData.deploy_count_per_day.map((x) => ( x.count )),
-            }
+            },
           ]
         }
         this.currentOpenIssue = data.issues.open_count
