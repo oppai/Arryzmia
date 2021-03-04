@@ -49,11 +49,14 @@ defmodule Arryzmia.Github do
   end
 
   defp internalCountOfDeploys(repo_name) do
-    thirty_days = Timex.now() |> Timex.shift(months: -1) |> range_from() |> Enum.map(&to_string/1)
+    range_days = Timex.now() |> Timex.shift(months: -2) |> range_from() |> Enum.map(&to_string/1)
     deploy_days = Client.deployments(repo_name) |> filtered_date("created_at")
+    release_days = Client.releases(repo_name) |> filtered_date("created_at")
     %{
       deploy_count: deploy_days |> length(),
-      deploy_count_per_day: make_count_of_days_all(thirty_days, deploy_days)
+      deploy_count_per_day: make_count_of_days_all(range_days, deploy_days),
+      release_count: release_days |> length(),
+      release_count_per_day: make_count_of_days_all(range_days, release_days),
     }
   end
 
