@@ -2,7 +2,7 @@ defmodule Arryzmia.Github.ClientTest do
   use ExUnit.Case, async: false
   import Mock
 
-  test "Github Client" do
+  test "Github.Client.issues" do
     mocked_request = fn(_path, %{state: state}) ->
       case state do
         "all" -> Arryzmia.Fixtures.Loader.load("github.issues.all.json")
@@ -18,6 +18,16 @@ defmodule Arryzmia.Github.ClientTest do
       assert Arryzmia.Github.Client.pulls("foo/bar") |> length() == 11
       assert Arryzmia.Github.Client.pulls("foo/bar", %{state: "all"}) |> length() == 24
       assert Arryzmia.Github.Client.pulls("foo/bar", %{state: "closed"}) |> length() == 24
+    end
+  end
+
+  test "Github.Client.deployments" do
+    mocked_request = fn(_path, _opt) ->
+      Arryzmia.Fixtures.Loader.load("github.deployments.all.json")
+      |> Jason.decode!()
+    end
+    with_mock Arryzmia.Github.Client.Core, [paging_request: mocked_request] do
+      assert Arryzmia.Github.Client.deployments("foo/bar") |> length() == 30
     end
   end
 end

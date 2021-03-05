@@ -26,6 +26,14 @@ defmodule Arryzmia.Github.Client do
     Core.request("/repos/#{repo_name}")
   end
 
+  def deployments(repo_name) do
+    Core.paging_request("/repos/#{repo_name}/deployments", %{per_page: 100, page: 1})
+  end
+
+  def releases(repo_name) do
+    Core.paging_request("/repos/#{repo_name}/releases", %{per_page: 100, page: 1})
+  end
+
   def issues(repo_name, opt \\ %{state: "open"}) do
     Core.paging_request("/repos/#{repo_name}/issues", opt |> Map.merge(%{per_page: 100, page: 1}))
     |> Enum.filter(fn issue ->

@@ -2,17 +2,23 @@
   <div>
     <h1>GitHub Health Board of <a href="https://github.com/tokyo-metropolitan-gov/covid19" target="_blank">{{ this.repo }}</a></h1>
     <div class="dashboard">
-      <div class="dashboard-issues">
+      <div class="dashboard-group dashboard-deploys">
+        <h4>Deployments</h4>
+        <div class="dashboard-issues-chars">
+          <chart :chart-data="deployDataset" :options="options.wide" :width="900" />
+        </div>
+      </div>
+      <div class="dashboard-group dashboard-issues">
         <h4>Issues</h4>
         <div class="dashboard-issues-chars">
-          <chart :chart-data="issueDataset" :options="options" :width="400" />
+          <chart :chart-data="issueDataset" :options="options.middle" :width="400" />
           <panel name="Current" :value="currentOpenIssue" />
         </div>
       </div>
-      <div class="dashboard-pulls">
+      <div class="dashboard-group dashboard-pulls">
         <h4>Pull Requests</h4>
         <div class="dashboard-pulls-chars">
-          <chart :chart-data="pullDataset" :options="options" :width="400" />
+          <chart :chart-data="pullDataset" :options="options.middle" :width="400" />
           <panel name="Current" :value="currentOpenPull" />
         </div>
       </div>
@@ -28,52 +34,105 @@ export default {
   data() {
     return {
       repo: "tokyo-metropolitan-gov/covid19",
-      api_url: process.env.VUE_APP_API,
-      issueDataset: null, pullDataset: null, currentOpenIssue: 0, currentOpenPull: 0,
-      options: { responsive: false }
+      apiUrl: process.env.VUE_APP_API,
+      issueDataset: null, pullDataset: null, deployDataset: null,
+      currentOpenIssue: 0, currentOpenPull: 0,
+      dashbordWidth: window.innerWidth * 0.8,
+      options: {
+        middle: { responsive: false },
+        wide: { responsive: true },
+      }
     }
   },
   mounted() {
     this
       .axios
-      .get(`${this.api_url}/api/dashboard/summary?repo=${this.repo}`)
+      .get(`${this.apiUrl}/api/dashboard/summary?repo=${this.repo}`)
       .then((response) => {
         const data = response.data.data
+        const issueData = this.dataOf(data.issues)
+        const pullData = this.dataOf(data.pulls)
+        const deployData = data.deploys
+
         this.issueDataset = {
-          labels: data.issues.created_count_per_day.map((day) => ( day.date )),
+          labels: issueData.days,
           datasets: [
+            {
+              label: 'Total Issues',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: issueData.countPerDay,
+            },
             {
               label: 'Open Issues',
               backgroundColor: '#f87979',
-              data: data.issues.created_count_per_day.map((day) => ( day.count )),
+              data: issueData.openPerDay,
             },
             {
-              label: 'Close Issues',
+              label: 'Closed Issues',
               backgroundColor: '#7979f8',
-              data: data.issues.closed_count_per_day.map((day) => ( day.count )),
+              data: issueData.closedPerDay,
             }
           ]
         }
         this.pullDataset = {
-          labels: data.issues.closed_count_per_day.map((day) => ( day.date )),
+          labels: pullData.days,
           datasets: [
             {
-              label: 'Open Pulls',
-              backgroundColor: '#f87979',
-              data: data.pulls.created_count_per_day.map((day) => ( day.count )),
+              label: 'Total PRs',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: pullData.countPerDay,
             },
             {
-              label: 'Close Pulls',
+              label: 'Open PRs',
+              backgroundColor: '#f87979',
+              data: pullData.openPerDay,
+            },
+            {
+              label: 'Close PRs',
               backgroundColor: '#7979f8',
-              data: data.pulls.closed_count_per_day.map((day) => ( day.count )),
+              data: pullData.closedPerDay,
             }
+          ]
+        }
+        this.deployDataset = {
+          labels: deployData.deploy_count_per_day.map((x) => ( x.date )),
+          datasets: [
+            {
+              label: 'Release / Day',
+              type: 'line',
+              fill: false,
+              backgroundColor: '#f8f879',
+              data: deployData.release_count_per_day.map((x) => ( x.count )),
+            },
+            {
+              label: 'Deploy / Day',
+              backgroundColor: '#f87979',
+              data: deployData.deploy_count_per_day.map((x) => ( x.count )),
+            },
           ]
         }
         this.currentOpenIssue = data.issues.open_count
         this.currentOpenPull = data.pulls.open_count
       })
   },
-  methods: {
+  methods:{
+    dataOf: (issues) => {
+      const issueCountPerDay = issues.created_count_per_day.reduce((acc, v, i) => {
+        const last = acc[acc.length - 1]
+        const closed = issues.closed_count_per_day[i]
+        return acc.concat(last - v.count + closed.count)
+      }, [issues.open_count]).slice(0,-1)
+      return {
+        days: issues.created_count_per_day.map((day) => ( day.date )),
+        countPerDay: issueCountPerDay,
+        openPerDay: issues.created_count_per_day.map((day) => ( day.count )),
+        closedPerDay: issues.closed_count_per_day.map((day) => ( -day.count )),
+      }
+    }
   },
   components: {
     Chart,
@@ -87,16 +146,17 @@ export default {
 div.dashboard {
   display: flex;
   flex-wrap: wrap;
+  padding: 10px;
 }
 
-.dashboard-issues {
+.dashboard-group {
+  margin: 10px;
 }
+
 .dashboard-issues-chars {
   display: flex;
 }
 
-.dashboard-pulls {
-}
 .dashboard-pulls-chars {
   display: flex;
 }

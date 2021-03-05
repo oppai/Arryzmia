@@ -17,7 +17,7 @@ export default {
 <style scoped>
 div.charts-panel {
   padding: 20px;
-  margin: auto;
+  margin: 50px auto auto auto;
 }
 h5.charts-panel-title {
   font-size: 21px;
