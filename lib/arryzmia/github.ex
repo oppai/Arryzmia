@@ -26,11 +26,17 @@ defmodule Arryzmia.Github do
   defp filtered_date(issues, label) do
     Enum.map(issues, fn issue ->
       Map.get(issue, label)
-        |> DateTime.from_iso8601()
-        |> elem(1)
-        |> DateTime.to_date()
-        |> to_string()
+      |> case do
+        nil -> nil
+        date ->
+          date
+          |> DateTime.from_iso8601()
+          |> elem(1)
+          |> DateTime.to_date()
+          |> to_string()
+      end
     end)
+    |> Enum.filter(&(&1))
   end
 
   defp count_of_days(days, date) do
@@ -73,14 +79,58 @@ defmodule Arryzmia.Github do
   end
 
   defp internalCountOfPulls(repo_name) do
-    open_pulls = Client.pulls(repo_name) |> length()
+    open_pulls = Client.pulls(repo_name)
     thirty_days = Timex.now() |> Timex.shift(months: -1) |> range_from() |> Enum.map(&to_string/1)
-    created_days = Client.pulls(repo_name, %{state: "all", since: month_ago()}) |> filtered_date("created_at")
-    closed_days = Client.pulls(repo_name, %{state: "closed", since: month_ago()}) |> filtered_date("closed_at")
+    all_days = Client.pulls(repo_name, %{state: "all", since: month_ago()})
+    created_days = all_days |> filtered_date("created_at")
+    closed_days = all_days |> filtered_date("closed_at")
     %{
-      open_count: open_pulls,
+      open_count: open_pulls |> length(),
+      open_since_a_month_count: open_pulls |> count_of_old_issues(),
       created_count_per_day: make_count_of_days_all(thirty_days, created_days),
-      closed_count_per_day: make_count_of_days_all(thirty_days, closed_days)
+      closed_count_per_day: make_count_of_days_all(thirty_days, closed_days),
+      lifetime_of_pull_requests: %{
+        count_of_all: all_days |> Enum.filter(&( &1 |> Map.get("closed_at") |> is_nil() |> Kernel.!() )) |> length(),
+        average: all_days |> average_lifetime_of_pull_requests()
+      }
     }
+  end
+
+  defp count_of_old_issues(pulls) do
+    month_ago = Timex.now() |> Timex.shift(months: -1)
+    pulls
+    |> Enum.count(fn pull ->
+      pull
+      |> Map.get("created_at")
+      |> DateTime.from_iso8601()
+      |> elem(1)
+      |> Kernel.<(month_ago)
+    end) 
+  end
+
+  defp average_lifetime_of_pull_requests(pulls) do
+    pulls
+    |> Enum.map(fn pull ->
+      created_at = pull |> Map.get("created_at") |> datetime_from_string()
+      closed_at = pull |> Map.get("closed_at") |> datetime_from_string()
+      calc_duration_time(created_at, closed_at)
+      |> case  do
+         :opening -> nil
+         duration -> duration / 60
+      end
+    end)
+    |> Enum.filter(&(&1))
+    |> (fn list ->
+      (list |> Enum.sum()) / (list |> length())
+    end).()
+    |> Float.ceil(2)
+  end
+
+  defp datetime_from_string(nil), do: nil
+  defp datetime_from_string(arg), do: DateTime.from_iso8601(arg) |> elem(1)
+
+  defp calc_duration_time(_, nil), do: :opening
+  defp calc_duration_time(created_at, closed_at) do
+    Timex.diff(closed_at, created_at, :minutes)
   end
 end

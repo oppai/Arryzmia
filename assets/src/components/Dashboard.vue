@@ -8,18 +8,28 @@
           <chart :chart-data="deployDataset" :options="options.wide" :width="900" />
         </div>
       </div>
-      <div class="dashboard-group dashboard-issues">
-        <h4>Issues</h4>
-        <div class="dashboard-issues-chars">
-          <chart :chart-data="issueDataset" :options="options.middle" :width="400" />
-          <panel name="Current" :value="currentOpenIssue" />
+      <div class="dashboard-group dashboard-pulls-lifetime">
+        <h4>Development Lifetime (For a month)</h4>
+        <div class="dashboard-lifetime-chars">
+          <panel name="Active PRs" :value="lifetimeOfPull.countOfAll" />
+          <panel name="Average PR LifeTime(min)" :value="lifetimeOfPull.average" />
         </div>
       </div>
       <div class="dashboard-group dashboard-pulls">
         <h4>Pull Requests</h4>
         <div class="dashboard-pulls-chars">
           <chart :chart-data="pullDataset" :options="options.middle" :width="400" />
-          <panel name="Current" :value="currentOpenPull" />
+          <div>
+            <panel name="Current" :value="currentOpenPull" />
+            <panel name="Old(< 1 month)" :value="countOfOldPull" />
+          </div>
+        </div>
+      </div>
+      <div class="dashboard-group dashboard-issues">
+        <h4>Issues</h4>
+        <div class="dashboard-issues-chars">
+          <chart :chart-data="issueDataset" :options="options.middle" :width="400" />
+          <panel name="Current" :value="currentOpenIssue" />
         </div>
       </div>
     </div>
@@ -37,6 +47,11 @@ export default {
       apiUrl: process.env.VUE_APP_API,
       issueDataset: null, pullDataset: null, deployDataset: null,
       currentOpenIssue: 0, currentOpenPull: 0,
+      countOfOldPull: 0,
+      lifetimeOfPull: {
+        countOfAll: 0,
+        average: 0
+      },
       dashbordWidth: window.innerWidth * 0.8,
       options: {
         middle: { responsive: false },
@@ -117,6 +132,9 @@ export default {
         }
         this.currentOpenIssue = data.issues.open_count
         this.currentOpenPull = data.pulls.open_count
+        this.countOfOldPull = data.pulls.open_since_a_month_count
+        this.lifetimeOfPull.countOfAll = data.pulls.lifetime_of_pull_requests.count_of_all
+        this.lifetimeOfPull.average = data.pulls.lifetime_of_pull_requests.average
       })
   },
   methods:{
