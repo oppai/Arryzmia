@@ -90,7 +90,7 @@ defmodule Arryzmia.Github do
       created_count_per_day: make_count_of_days_all(thirty_days, created_days),
       closed_count_per_day: make_count_of_days_all(thirty_days, closed_days),
       lifetime_of_pull_requests: %{
-        count_of_all: all_days |> length(),
+        count_of_all: all_days |> Enum.filter(&( &1 |> Map.get("closed_at") |> is_nil() |> Kernel.!() )) |> length(),
         average: all_days |> average_lifetime_of_pull_requests()
       }
     }
